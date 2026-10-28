@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <title>Quintle - A daily word game</title>
+  <meta name="description" content="Guess the hidden five-letter word in six tries. A new puzzle every day.">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="color-scheme" content="light dark">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Quintle">
+  <link rel="icon" href="icons/favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="preload" href="fonts/clear-sans-latin-700-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="styles.css">
+  <script>
+    // Apply the saved theme before first paint so there is no flash.
+    try {
+      var s = JSON.parse(localStorage.getItem('quintle_settings') || 'null');
+      var dark = s ? s.darkTheme : matchMedia('(prefers-color-scheme: dark)').matches;
+      if (dark) document.documentElement.classList.add('dark');
+      if (s && s.colorBlindTheme) document.documentElement.classList.add('high-contrast');
+    } catch (e) {}
+  </script>
+  <script type="module" src="js/main.js"></script>
+</head>
+<body>
+  <div id="game">
+    <header>
+      <div class="menu menu-left">
+        <button class="icon" id="help-button" type="button" aria-label="Help">
+          <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><path d="M11 18h2v-2h-2v2zm1-16C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm0-14c-2.21 0-4 1.79-4 4h2c0-1.1.9-2 2-2s2 .9 2 2c0 2-3 1.75-3 5h2c0-2.25 3-2.5 3-5 0-2.21-1.79-4-4-4z"/></svg>
+        </button>
+      </div>
+      <h1 class="title">Quintle</h1>
+      <div class="menu menu-right">
+        <button class="icon" id="stats-button" type="button" aria-label="Statistics">
+          <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><path d="M16,11V3H8v6H2v12h20V11H16z M10,5h4v14h-4V5z M4,11h4v8H4V11z M20,19h-4v-6h4V19z"/></svg>
+        </button>
+        <button class="icon" id="settings-button" type="button" aria-label="Settings">
+          <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.07,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <main id="board-container">
+      <div id="board" role="group" aria-label="Game board"></div>
+    </main>
+
+    <div id="keyboard" role="group" aria-label="Keyboard"></div>
+
+    <div id="toaster" class="toaster" aria-live="polite" aria-atomic="false"></div>
+
+    <!-- Settings is a full page over the game, like the original. -->
+    <section id="settings-page" class="page" role="dialog" aria-modal="true" aria-labelledby="settings-title" hidden>
+      <div class="page-inner">
+        <h2 class="page-title" id="settings-title">Settings</h2>
+        <button class="icon close" type="button" aria-label="Close">
+          <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+        <div class="page-content">
+          <div class="setting">
+            <div class="text">
+              <div class="setting-title" id="hard-title">Hard Mode</div>
+              <div class="setting-description">Any revealed hints must be used in subsequent guesses</div>
+            </div>
+            <button class="switch" id="hard-mode" type="button" role="switch" aria-checked="false" aria-labelledby="hard-title"><span class="knob"></span></button>
+          </div>
+          <div class="setting">
+            <div class="text">
+              <div class="setting-title" id="dark-title">Dark Theme</div>
+            </div>
+            <button class="switch" id="dark-theme" type="button" role="switch" aria-checked="false" aria-labelledby="dark-title"><span class="knob"></span></button>
+          </div>
+          <div class="setting">
+            <div class="text">
+              <div class="setting-title" id="contrast-title">High Contrast Mode</div>
+              <div class="setting-description">For improved color vision</div>
+            </div>
+            <button class="switch" id="high-contrast" type="button" role="switch" aria-checked="false" aria-labelledby="contrast-title"><span class="knob"></span></button>
+          </div>
+        </div>
+        <footer class="page-footer">
+          <div class="copyright">&copy; 2026 Vocal101</div>
+          <div class="puzzle-number" id="puzzle-number"></div>
+        </footer>
+      </div>
+    </section>
+  </div>
+
+  <div id="help-modal" class="overlay" hidden>
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="help-title">
+      <button class="icon close" type="button" aria-label="Close">
+        <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+      </button>
+      <h2 class="modal-title" id="help-title">How To Play</h2>
+      <div class="help">
+        <p>Find the hidden word in <strong>6 tries</strong>.</p>
+        <p>Every guess has to be a real five-letter word. Press the enter key to submit it.</p>
+        <p>Once you submit a guess, the tiles change color to show how close you were.</p>
+        <div class="examples">
+          <p><strong>Examples</strong></p>
+          <div class="example">
+            <div class="example-row" data-word="weary" data-mark="0" data-state="correct"></div>
+            <p>The letter <strong>W</strong> is in the word, and in the right spot.</p>
+          </div>
+          <div class="example">
+            <div class="example-row" data-word="pills" data-mark="1" data-state="present"></div>
+            <p>The letter <strong>I</strong> is in the word, but in a different spot.</p>
+          </div>
+          <div class="example">
+            <div class="example-row" data-word="vague" data-mark="3" data-state="absent"></div>
+            <p>The letter <strong>U</strong> is not in the word anywhere.</p>
+          </div>
+        </div>
+        <p><strong>A new puzzle is released daily at midnight.</strong></p>
+      </div>
+    </div>
+  </div>
+
+  <div id="stats-modal" class="overlay" hidden>
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="stats-title">
+      <button class="icon close" type="button" aria-label="Close">
+        <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+      </button>
+      <h2 class="modal-title" id="stats-title">Statistics</h2>
+      <div class="statistics">
+        <div class="statistic-container"><div class="statistic" id="stat-played">0</div><div class="label">Played</div></div>
+        <div class="statistic-container"><div class="statistic" id="stat-win">0</div><div class="label">Win %</div></div>
+        <div class="statistic-container"><div class="statistic" id="stat-streak">0</div><div class="label">Current Streak</div></div>
+        <div class="statistic-container"><div class="statistic" id="stat-max">0</div><div class="label">Max Streak</div></div>
+      </div>
+      <h2 class="modal-title">Guess Distribution</h2>
+      <div class="guess-distribution" id="guess-distribution"></div>
+      <div class="stats-footer" id="stats-footer" hidden>
+        <div class="countdown">
+          <h2 class="modal-title">Next Quintle</h2>
+          <div class="timer" id="timer" role="timer">00:00:00</div>
+        </div>
+        <div class="share">
+          <button id="share-button" type="button">
+            Share
+            <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <noscript><p class="noscript">Quintle needs JavaScript to run.</p></noscript>
+</body>
+</html>
